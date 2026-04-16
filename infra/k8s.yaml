@@ -1,0 +1,35 @@
+# 1. EL DEPLOYMENT (Las cajas)
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: orquestador-deployment
+spec:
+  replicas: 2  # ¡Magia pura! Le decimos que cree 2 clones de tu sistema para soportar carga
+  selector:
+    matchLabels:
+      app: orquestador
+  template:
+    metadata:
+      labels:
+        app: orquestador
+    spec:
+      containers:
+      - name: orquestador
+        image: orquestador-onboarding:latest
+        imagePullPolicy: Never  # Vital: le dice que use la imagen que tú creaste localmente
+        ports:
+        - containerPort: 8000
+---
+# 2. EL SERVICE (La puerta de entrada)
+apiVersion: v1
+kind: Service
+metadata:
+  name: orquestador-service
+spec:
+  type: LoadBalancer # Actúa como un balanceador de carga entre tus 2 clones
+  selector:
+    app: orquestador
+  ports:
+    - protocol: TCP
+      port: 8000
+      targetPort: 8000

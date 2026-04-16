@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  # 1. Tu Base de Datos (La que ya tenías)
+  db:
+    image: postgres:15-alpine
+    container_name: postgres_rrhh
+    restart: always
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: adminpassword
+      POSTGRES_DB: rrhh_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - rrhh_data:/var/lib/postgresql/data
+
+  # 2. Tu nuevo panel visual (El "phpMyAdmin" de Postgres)
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: pgadmin_rrhh
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@empresa.com
+      PGADMIN_DEFAULT_PASSWORD: adminpassword
+    ports:
+      - "5050:80" # Abriremos el panel en el puerto 5050
+    depends_on:
+      - db # Le decimos que espere a que la BDD esté lista
+
+volumes:
+  rrhh_data:

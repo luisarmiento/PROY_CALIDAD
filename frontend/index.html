@@ -1,0 +1,175 @@
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+
+<body class="bg-gray-50 font-sans flex h-screen">
+    <aside class="w-64 bg-white border-r border-gray-200 flex-shrink-0">
+        <div class="p-6 text-2xl font-bold text-blue-600">MyOnBoard<span class="text-gray-800"></span></div>
+        <nav class="mt-6">
+            <a href="#" class="flex items-center px-6 py-3 bg-blue-50 text-blue-600 border-r-4 border-blue-600">
+                <i class="fas fa-home mr-3"></i> Home
+            </a>
+            <a href="#" class="flex items-center px-6 py-3 text-gray-600 hover:bg-gray-50">
+                <i class="fas fa-file-contract mr-3"></i> Contratos
+            </a>
+        </nav>
+    </aside>
+
+    <main class="flex-1 overflow-y-auto p-8">
+        <header class="flex justify-between items-center mb-8">
+            <h1 class="text-2xl font-bold text-gray-800">Buenos días, Daniel</h1>
+            <button onclick="abrirModal()" class="bg-blue-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-700">
+               + Crear Contrato
+            </button>
+        </header>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+                <p class="text-gray-500 text-sm">Contratos Activos</p>
+                <h3 class="text-2xl font-bold text-gray-800" id="count-activos">0</h3>
+            </div>
+            </div>
+
+        <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+            <div class="p-6 border-b border-gray-100 flex justify-between items-center">
+                <h3 class="font-bold text-gray-800">Contratos Recientes</h3>
+                <button onclick="cargarEmpleados()" class="text-blue-600 text-sm font-medium">Ver todos</button>
+            </div>
+            <table class="w-full text-left">
+                <thead class="bg-gray-50 text-gray-400 text-xs uppercase">
+                    <tr>
+                        <th class="px-6 py-3">Empleado</th>
+                        <th class="px-6 py-3">Puesto</th>
+                        <th class="px-6 py-3">Estado</th>
+                        <th class="px-6 py-3">Acción</th>
+                    </tr>
+                </thead>
+                <tbody id="lista-empleados" class="divide-y divide-gray-100 text-sm">
+                    </tbody>
+            </table>
+        </div>
+    </main>
+
+<div id="modal-crear" class="fixed inset-0 bg-gray-900 bg-opacity-50 hidden items-center justify-center z-50">
+    <div class="bg-white rounded-xl shadow-xl w-full max-w-md p-8">
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-xl font-bold text-gray-800">Crear nuevo contrato</h2>
+            <button onclick="cerrarModal()" class="text-gray-400 hover:text-gray-600"><i class="fas fa-times"></i></button>
+        </div>
+        <form id="form-onboarding" class="space-y-4">
+            <input type="text" id="nombre" placeholder="Nombre" class="w-full border p-2 rounded-lg" required>
+            <input type="text" id="apellido" placeholder="Apellido" class="w-full border p-2 rounded-lg" required>
+            <input type="text" id="dni" placeholder="DNI" class="w-full border p-2 rounded-lg" required maxlength="8">
+            <select id="puesto" class="w-full border p-2 rounded-lg" required>
+                <option value="Ingeniero">Ingeniero</option>
+                <option value="Asesor de Ventas">Asesor de Ventas</option>
+                <option value="Soporte Técnico">Soporte Técnico</option>
+            </select>
+            <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded-lg font-bold">Generar Onboarding</button>
+        </form>
+    </div>
+</div>
+
+<script>
+    async function cargarEmpleados() {
+        try {
+            const respuesta = await fetch('http://127.0.0.1:8000/empleados');
+            const empleados = await respuesta.json();
+            
+            const tabla = document.getElementById('lista-empleados');
+            const contador = document.getElementById('count-activos');
+            
+            // Limpiamos la tabla antes de llenar
+            tabla.innerHTML = '';
+            contador.innerText = empleados.length;
+
+            empleados.forEach(emp => {
+                // GESTIÓN DE ESTADO: Si el campo no existe en la BDD, mostramos 'PENDIENTE'
+                const estadoActual = emp.status || 'PENDIENTE';
+                
+                // Definimos el color según el estado
+                const colorClase = estadoActual === 'ACTIVE' || estadoActual === 'ACTIVO' 
+                    ? 'bg-green-100 text-green-700' 
+                    : 'bg-yellow-100 text-yellow-700';
+
+                const fila = `
+                    <tr class="hover:bg-gray-50 transition-colors border-b border-gray-100">
+                        <td class="px-6 py-4 font-medium text-gray-900">${emp.nombre} ${emp.apellido}</td>
+                        <td class="px-6 py-4 text-gray-600">${emp.puesto}</td>
+                        <td class="px-6 py-4">
+                            <span class="px-3 py-1 text-[10px] font-bold rounded-full uppercase tracking-wider ${colorClase}">
+                                ${estadoActual}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 text-blue-600 font-medium cursor-pointer hover:underline text-sm">
+                            Ver contrato
+                        </td>
+                    </tr>
+                `;
+                tabla.innerHTML += fila;
+            });
+        } catch (error) {
+            console.error("Error al cargar empleados:", error);
+            const tabla = document.getElementById('lista-empleados');
+            tabla.innerHTML = `<tr><td colspan="4" class="px-6 py-4 text-center text-red-500">Error al conectar con el servidor</td></tr>`;
+        }
+    }
+
+    // Ejecutar la carga apenas abra la página
+    window.onload = cargarEmpleados;
+
+// Función para mostrar el modal
+function abrirModal() {
+    const modal = document.getElementById('modal-crear');
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+}
+
+// Función para ocultar el modal
+function cerrarModal() {
+    const modal = document.getElementById('modal-crear');
+    modal.classList.add('hidden');
+    modal.classList.remove('flex');
+}
+
+// Vincula el botón azul de "+ Crear Contrato" con abrirModal()
+// Cambia tu botón azul arriba por: <button onclick="abrirModal()" ...>
+
+// Escuchar el envío del formulario
+document.getElementById('form-onboarding').addEventListener('submit', async (e) => {
+    e.preventDefault(); // CRITICO: evita que la página se recargue
+    console.log("🚀 Enviando datos..."); 
+
+    const datos = {
+        nombre: document.getElementById('nombre').value,
+        apellido: document.getElementById('apellido').value,
+        dni: document.getElementById('dni').value,
+        puesto: document.getElementById('puesto').value
+    };
+
+    try {
+        const res = await fetch('http://127.0.0.1:8000/iniciar-onboarding', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(datos)
+        });
+
+        console.log("📡 Respuesta del servidor:", res.status);
+
+        if(res.ok) {
+            alert("✅ Contrato creado con éxito");
+            cerrarModal();
+            document.getElementById('form-onboarding').reset(); 
+            cargarEmpleados(); // Esto actualiza tu tabla de Deel
+        } else {
+            const error = await res.json();
+            alert("❌ Error: " + (error.detail || "No se pudo crear"));
+        }
+    } catch (err) {
+        console.error("🔥 Error de conexión:", err);
+        alert("⚠️ No se pudo conectar con el servidor (Uvicorn)");
+    }
+});
+
+</script>
+
+</body>
