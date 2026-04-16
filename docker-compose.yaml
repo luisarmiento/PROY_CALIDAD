@@ -15,7 +15,7 @@ services:
     volumes:
       - rrhh_data:/var/lib/postgresql/data
 
-  # 2. Panel visual (El "phpMyAdmin" de Postgres)
+  # 2. Panel visual
   pgadmin:
     image: dpage/pgadmin4
     container_name: pgadmin_rrhh
@@ -24,9 +24,26 @@ services:
       PGADMIN_DEFAULT_EMAIL: admin@empresa.com
       PGADMIN_DEFAULT_PASSWORD: adminpassword
     ports:
-      - "5050:80" # Abriremos el panel en el puerto 5050
+      - "5050:80"
     depends_on:
-      - db # Le decimos que espere a que la BDD esté lista
+      - db
+
+  # 3. Backend (Orquestador FastAPI)
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: mi-orquestador
+    restart: always
+    ports:
+      - "8000:8000"
+    environment:
+      # Usamos 'db' en el host porque Docker resuelve el nombre del servicio
+      - DATABASE_URL=postgresql://admin:adminpassword@db:5432/rrhh_db
+    depends_on:
+      - db
+    volumes:
+      - ./backend:/app # Sincroniza tu código para que el --reload funcione
 
 volumes:
   rrhh_data:

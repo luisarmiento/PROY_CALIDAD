@@ -2,7 +2,7 @@ from sqlmodel import create_engine, SQLModel, Session
 from .models import Empleado # Importamos el plano que acabas de crear
 
 # La dirección exacta del contenedor Docker (Usuario:Contraseña@Lugar:Puerto/NombreBD)
-DATABASE_URL = "postgresql://admin:adminpassword@localhost:5432/rrhh_db"
+DATABASE_URL = "postgresql://admin:adminpassword@db:5432/rrhh_db"
 
 # El motor que se conecta a la base de datos
 engine = create_engine(DATABASE_URL, echo=True)

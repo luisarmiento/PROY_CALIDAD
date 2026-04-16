@@ -7,9 +7,11 @@ class Empleado(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     nombre: str
     apellido: str
-    dni: str = Field(unique=True, index=True) # El DNI no se puede repetir
+    dni: str = Field(index=True, unique=True)
     puesto: str
     correo: str
-    contrato_pdf: str
+    contrato_pdf: Optional[str] = None
     fecha_creacion: datetime = Field(default_factory=datetime.utcnow)
-    status: str = Field(default="PENDIENTE") # Los nuevos nacerán como Pendiente
+    status: str = Field(default="PENDIENTE")
+    role: Optional[str] = Field(default="candidato")
+    hashed_password: Optional[str] = Field(default=None)
