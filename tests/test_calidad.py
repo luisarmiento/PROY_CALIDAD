@@ -1,7 +1,7 @@
 from fastapi.testclient import TestClient
-from backend.app.main import app  # Importamos tu Orquestador desde tu archivo Calidad.py
+from backend.app.main import app  # Importamos el Orquestador desde el archivo Calidad.py
 
-# Creamos el "robot" que hará las peticiones
+# Se crea el "robot" que hará las peticiones
 client = TestClient(app)
 
 def test_camino_feliz_gerente():

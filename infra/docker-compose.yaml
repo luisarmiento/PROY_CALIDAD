@@ -1,7 +1,7 @@
 version: '3.8'
 
 services:
-  # 1. Tu Base de Datos (La que ya tenías)
+  # 1. Base de datos
   db:
     image: postgres:15-alpine
     container_name: postgres_rrhh
@@ -15,7 +15,7 @@ services:
     volumes:
       - rrhh_data:/var/lib/postgresql/data
 
-  # 2. Tu nuevo panel visual (El "phpMyAdmin" de Postgres)
+  # 2. Panel visual (El "phpMyAdmin" de Postgres)
   pgadmin:
     image: dpage/pgadmin4
     container_name: pgadmin_rrhh

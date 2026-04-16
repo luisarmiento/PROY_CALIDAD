@@ -7,7 +7,7 @@ from pydantic import BaseModel
 
 app = FastAPI(title="Orquestador de Onboarding con BDD")
 
-# Permitir que tu index.html se conecte
+# Permitir que el index.html se conecte
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -25,7 +25,7 @@ def obtener_empleado_por_dni(dni: str, db: Session = Depends(obtener_sesion)):
 
 class LoginData(BaseModel):
     usuario: str
-    password: str # Por ahora lo usaremos como DNI para trabajadores
+    password: str # Por ahora se usa como DNI para trabajadores
 
 @app.post("/login")
 async def login(data: LoginData, db: Session = Depends(obtener_sesion)):
@@ -114,12 +114,12 @@ def listar_empleados(db: Session = Depends(obtener_sesion)):
 
 @app.post("/login")
 def login(username: str, dni: str = None):
-    # Lógica ultra simple por ahora:
+    # Lógica simple por ahora:
     if username == "admin":
         return {"role": "RRHH", "redirect": "dashboard.html"}
     
     # Si no es admin, buscamos al trabajador por DNI
-    # (Esto servirá para que el trabajador entre a ver su contrato)
+    # (Esto sirve para que el trabajador entre a ver su contrato)
     return {"role": "TRABAJADOR", "dni": dni, "redirect": "portal_trabajador.html"}
 
 

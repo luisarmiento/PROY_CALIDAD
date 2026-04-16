@@ -4,7 +4,7 @@ kind: Deployment
 metadata:
   name: orquestador-deployment
 spec:
-  replicas: 2  # ¡Magia pura! Le decimos que cree 2 clones de tu sistema para soportar carga
+  replicas: 2  # Crea 2 clones del sistema para soportar carga
   selector:
     matchLabels:
       app: orquestador
@@ -16,17 +16,17 @@ spec:
       containers:
       - name: orquestador
         image: orquestador-onboarding:latest
-        imagePullPolicy: Never  # Vital: le dice que use la imagen que tú creaste localmente
+        imagePullPolicy: Never  # Usa la imagen local creada 
         ports:
         - containerPort: 8000
 ---
-# 2. EL SERVICE (La puerta de entrada)
+# 2. EL SERVICE (La entrada)
 apiVersion: v1
 kind: Service
 metadata:
   name: orquestador-service
 spec:
-  type: LoadBalancer # Actúa como un balanceador de carga entre tus 2 clones
+  type: LoadBalancer # Balanceador de carga entre los 2 clones
   selector:
     app: orquestador
   ports:

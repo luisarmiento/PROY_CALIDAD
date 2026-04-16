@@ -2,7 +2,7 @@ from sqlmodel import SQLModel, Field
 from datetime import datetime
 from typing import Optional
 
-# Este es el esquema exacto que se creará en PostgreSQL
+# Este es el esquema  que se creará en PostgreSQL
 class Empleado(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     nombre: str
