@@ -2,7 +2,7 @@ from fastapi import FastAPI, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from sqlmodel import Session, select 
 from .database import engine, crear_tablas, obtener_sesion
-from .models import Empleado
+from .models import Empleado, Documento
 from pydantic import BaseModel
 
 app = FastAPI(title="MyOnBoard API - Sistema de Onboarding")
