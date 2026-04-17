@@ -13,3 +13,11 @@ class Empleado(SQLModel, table=True):
     password: str # La contraseña (inicialmente puede ser el DNI)
     role: str = Field(default="TRABAJADOR") # "ADMIN" o "TRABAJADOR"
     status: str = Field(default="PENDIENTE")
+
+class Documento(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    nombre: str
+    tipo: str  # Ejemplo: 'Contrato', 'Manual', 'Reglamento'
+    ruta_archivo: str
+    fecha_subida: datetime = Field(default_factory=datetime.now)
+    id_empleado: Optional[int] = Field(default=None, foreign_key="empleado.id")

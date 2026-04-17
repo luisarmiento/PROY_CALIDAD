@@ -119,3 +119,16 @@ def obtener_mi_contrato(dni: str, db: Session = Depends(obtener_sesion)):
     if not empleado:
         raise HTTPException(status_code=404, detail="Contrato no encontrado")
     return empleado
+
+# --- ENDPOINTS DE DOCUMENTOS ---
+@app.get("/admin/documentos")
+def listar_documentos(db: Session = Depends(obtener_sesion)):
+    # Traemos todos los documentos registrados
+    return db.exec(select(Documento)).all()
+
+@app.post("/admin/subir-documento")
+def registrar_documento(doc: Documento, db: Session = Depends(obtener_sesion)):
+    db.add(doc)
+    db.commit()
+    db.refresh(doc)
+    return {"status": "Documento registrado", "id": doc.id}

@@ -10,33 +10,47 @@
 
     <aside class="w-64 bg-white border-r border-gray-200 flex-shrink-0 flex flex-col h-screen">
         <div class="p-6 text-2xl font-bold text-blue-600">MyOnBoard<span class="text-gray-800">.</span></div>
-        <nav class="mt-6 flex-1">
-            <a href="#" class="flex items-center px-6 py-3 bg-blue-50 text-blue-600 border-r-4 border-blue-600">
-                <i class="fas fa-home mr-3"></i> Home
-            </a>
-            <a href="#" class="flex items-center px-6 py-3 text-gray-600 hover:bg-gray-50">
-                <i class="fas fa-file-contract mr-3"></i> Contratos
-            </a>
-        </nav>
+    
+        <nav class="mt-4 flex-1">
+         <p class="px-6 text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">Menú Principal</p>
+        
+         <a href="#" id="link-home" onclick="navegar('home')" class="nav-link flex items-center px-6 py-3 bg-blue-50 text-blue-600 border-r-4 border-blue-600 font-medium transition-all">
+             <i class="fas fa-th-large mr-3 w-5"></i> Home
+         </a>
+
+          <a href="#" id="link-trabajadores" onclick="navegar('trabajadores')" class="nav-link flex items-center px-6 py-3 text-gray-600 hover:bg-gray-50 transition-all">
+              <i class="fas fa-users mr-3 w-5"></i> Trabajadores
+         </a>
+
+          <a href="#" id="link-documentos" onclick="navegar('documentos')" class="nav-link flex items-center px-6 py-3 text-gray-600 hover:bg-gray-50 transition-all">
+             <i class="fas fa-folder-open mr-3 w-5"></i> Documentos
+         </a>
+
+         <p class="px-6 text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-8 mb-2">Reportes</p>
+          <a href="#" class="flex items-center px-6 py-3 text-gray-400 cursor-not-allowed italic text-xs">
+             <i class="fas fa-chart-line mr-3 w-5"></i> Próximamente
+          </a>
+     </nav>
+
         <div class="p-6 border-t border-gray-100">
-            <button onclick="logout()" class="flex items-center text-gray-500 hover:text-red-600 transition-colors w-full font-medium">
-                <i class="fas fa-sign-out-alt mr-3"></i> Cerrar Sesión
-            </button>
-        </div>
+           <button onclick="logout()" class="flex items-center text-gray-500 hover:text-red-600 transition-colors w-full font-medium">
+             <i class="fas fa-sign-out-alt mr-3"></i> Cerrar Sesión
+          </button>
+     </div>
     </aside>
 
     <main class="flex-1 overflow-y-auto p-8">
+    
+    <div id="vista-home">
         <header class="flex justify-between items-center mb-8">
-            <h1 class="text-2xl font-bold text-gray-800" id="saludo-admin">Buenos días, Daniel</h1>
-            <button onclick="abrirModal()" class="bg-blue-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-700 shadow-sm transition">
-               + Crear Contrato
-            </button>
+            <h1 class="text-2xl font-bold text-gray-800">Buenos dias Daniel!</h1>
+            <div class="text-sm text-gray-500">Estado actual del Onboarding</div>
         </header>
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
             <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
-                <p class="text-gray-500 text-sm">Contratos Activos</p>
-                <h3 class="text-2xl font-bold text-gray-800" id="count-activos">0</h3>
+                <p class="text-gray-500 text-sm font-medium">Contratos en Proceso</p>
+                <h3 class="text-2xl font-bold text-blue-600" id="count-activos">0</h3>
             </div>
         </div>
 
@@ -45,6 +59,28 @@
                 <h3 class="font-bold text-gray-800">Contratos Recientes</h3>
                 <button onclick="cargarEmpleados()" class="text-blue-600 text-sm font-medium hover:underline">Actualizar</button>
             </div>
+            <table class="w-full text-left">
+                <thead class="bg-gray-50 text-gray-400 text-[10px] uppercase tracking-wider">
+                    <tr>
+                        <th class="px-6 py-3">Empleado</th>
+                        <th class="px-6 py-3 text-right">Acción</th>
+                    </tr>
+                </thead>
+                <tbody id="lista-recientes-home" class="divide-y divide-gray-100 text-sm">
+                    </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div id="vista-trabajadores" class="hidden">
+        <header class="flex justify-between items-center mb-8">
+            <h1 class="text-2xl font-bold text-gray-800">Gestión de Trabajadores</h1>
+            <button onclick="abrirModal()" class="bg-blue-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-700 shadow-sm transition">
+               + Crear Trabajador
+            </button>
+        </header>
+
+        <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
             <table class="w-full text-left">
                 <thead class="bg-gray-50 text-gray-400 text-[10px] uppercase tracking-wider">
                     <tr>
@@ -58,7 +94,24 @@
                     </tbody>
             </table>
         </div>
-    </main>
+    </div>
+
+    <div id="vista-documentos" class="hidden">
+        <header class="flex justify-between items-center mb-8">
+            <h1 class="text-2xl font-bold text-gray-800">Biblioteca de Documentos</h1>
+            <button onclick="alert('Funcionalidad de subida en desarrollo')" class="bg-green-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-green-700 shadow-sm transition">
+               + Subir Documento
+            </button>
+        </header>
+
+        <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden text-center py-20">
+            <div class="text-gray-400 mb-4 text-4xl"><i class="fas fa-folder-open"></i></div>
+            <h3 class="text-gray-800 font-bold">Sin documentos aún</h3>
+            <p class="text-gray-500 text-sm">Pronto podrás gestionar manuales y políticas aquí.</p>
+        </div>
+    </div>
+
+</main>
 
     <div id="modal-crear" class="fixed inset-0 bg-gray-900 bg-opacity-50 hidden items-center justify-center z-50">
         <div class="bg-white rounded-xl shadow-xl w-full max-w-md p-8 animate-in fade-in zoom-in duration-200">
@@ -153,10 +206,57 @@
         } catch (e) { console.error("Error cargando tabla:", e); }
     }
 
+    function navegar(seccion) {
+    // 1. Limpiar estilos de todos los links (UI del Aside)
+    const links = document.querySelectorAll('.nav-link');
+    links.forEach(link => {
+        link.classList.remove('bg-blue-50', 'text-blue-600', 'border-r-4', 'border-blue-600', 'font-medium');
+        link.classList.add('text-gray-600');
+    });
+
+    // 2. Aplicar estilo al link activo en el Aside
+    const activo = document.getElementById(`link-${seccion}`);
+    if (activo) {
+        activo.classList.remove('text-gray-600');
+        activo.classList.add('bg-blue-50', 'text-blue-600', 'border-r-4', 'border-blue-600', 'font-medium');
+    }
+
+    // 3. Lógica para mostrar/ocultar los contenedores del Main
+    // Definimos los IDs de las vistas que creamos en el HTML
+    const vistas = ['home', 'trabajadores', 'documentos'];
+
+    vistas.forEach(v => {
+        const contenedor = document.getElementById(`vista-${v}`);
+        if (contenedor) {
+            if (v === seccion) {
+                contenedor.classList.remove('hidden'); // Mostramos la elegida
+            } else {
+                contenedor.classList.add('hidden');    // Ocultamos las demás
+            }
+        }
+    });
+
+    // 4. Carga de datos automática al cambiar
+    // Si entramos a trabajadores o home, refrescamos la lista de empleados
+    if (seccion === 'home' || seccion === 'trabajadores') {
+        cargarEmpleados();
+    }
+    
+    // Si entramos a documentos, aquí llamaríamos a cargarDocumentos() en el futuro
+    if (seccion === 'documentos') {
+        console.log("Cargando sección de documentos...");
+    }
+
+    console.log("Vista actual:", seccion);
+}
+
     // 3. EVENTOS MODAL
     function abrirModal() { document.getElementById('modal-crear').classList.replace('hidden', 'flex'); }
     function cerrarModal() { document.getElementById('modal-crear').classList.replace('flex', 'hidden'); }
     function cerrarModalExito() { document.getElementById('modal-exito').classList.replace('flex', 'hidden'); }
+
+    
+    
 
     // 4. ENVÍO DE FORMULARIO
     document.getElementById('form-onboarding').addEventListener('submit', async (e) => {
