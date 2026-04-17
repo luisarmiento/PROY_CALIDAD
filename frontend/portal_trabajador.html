@@ -130,7 +130,7 @@
             
             const emp = await res.json();
 
-            // Sincronización final con BDD (por si cambió el puesto o estado)
+            // Sincronización final con BDD
             document.getElementById('nombre-empleado').innerText = emp.nombre;
             document.getElementById('user-display').innerText = `${emp.nombre} ${emp.apellido}`;
             document.getElementById('avatar-letra').innerText = emp.nombre.charAt(0).toUpperCase();
@@ -180,7 +180,7 @@
     }
 
     // --- ACTIVADOR AUTOMÁTICO ---
-    // Esta es la línea que faltaba para que todo se mueva al abrir la página
+    // 
     window.onload = cargarDatosPortal;
 
     async function confirmarFirma() {

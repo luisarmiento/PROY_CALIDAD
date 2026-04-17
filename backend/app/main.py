@@ -32,7 +32,7 @@ class DatosRRHH(BaseModel):
 @app.on_event("startup")
 def on_startup():
     crear_tablas()
-    # Semilla de Administrador (Para que siempre puedas entrar)
+    # Semilla de Administrador 
     with Session(engine) as session:
         admin_exists = session.exec(select(Empleado).where(Empleado.correo == "admin@empresa.com")).first()
         if not admin_exists:
