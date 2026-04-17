@@ -4,14 +4,12 @@ from typing import Optional
 
 # Este es el esquema  que se creará en PostgreSQL
 class Empleado(SQLModel, table=True):
-    id: Optional[int] = Field(default=None, primary_key=True)
+    id: int | None = Field(default=None, primary_key=True)
+    dni: str = Field(index=True, unique=True)
     nombre: str
     apellido: str
-    dni: str = Field(index=True, unique=True)
     puesto: str
-    correo: str
-    contrato_pdf: Optional[str] = None
-    fecha_creacion: datetime = Field(default_factory=datetime.utcnow)
+    correo: str = Field(unique=True) # El usuario para el login
+    password: str # La contraseña (inicialmente puede ser el DNI)
+    role: str = Field(default="TRABAJADOR") # "ADMIN" o "TRABAJADOR"
     status: str = Field(default="PENDIENTE")
-    role: Optional[str] = Field(default="candidato")
-    hashed_password: Optional[str] = Field(default=None)

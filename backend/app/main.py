@@ -5,9 +5,9 @@ from .database import engine, crear_tablas, obtener_sesion
 from .models import Empleado
 from pydantic import BaseModel
 
-app = FastAPI(title="Orquestador de Onboarding con BDD")
+app = FastAPI(title="MyOnBoard API - Sistema de Onboarding")
 
-# Permitir que el index.html se conecte
+# --- CONFIGURACIÓN CORS ---
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -16,112 +16,106 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-@app.get("/empleado/{dni}")
-def obtener_empleado_por_dni(dni: str, db: Session = Depends(obtener_sesion)):
-    statement = select(Empleado).where(Empleado.dni == dni)
-    empleado = db.exec(statement).first()
-    if not empleado:
-        raise HTTPException(status_code=404, detail="Empleado no encontrado")
-    return empleado
-
+# --- MODELOS DE ENTRADA (PYDANTIC) ---
 class LoginData(BaseModel):
     usuario: str
-    password: str # Por ahora se usa como DNI para trabajadores
+    password: str
 
-@app.post("/login")
-async def login(data: LoginData, db: Session = Depends(obtener_sesion)):
-    print(f"DEBUG: Intento de login para usuario: {data.usuario}")
-    # 1. CASO ADMIN (RRHH)
-    if data.usuario == "admin" and data.password == "admin123":
-        return {"rol": "ADMIN", "redirect": "index.html"}
-
-    # 2. CASO TRABAJADOR (El usuario sería su nombre y password su DNI)
-    statement = select(Empleado).where(Empleado.dni == data.password)
-    empleado = db.exec(statement).first()
-    
-    if empleado:
-        return {
-            "rol": "TRABAJADOR", 
-            "dni": empleado.dni, 
-            "redirect": "portal_trabajador.html"
-        }
-    
-    raise HTTPException(status_code=401, detail="Credenciales incorrectas")
-
-# Al iniciar, creamos las tablas en PostgreSQL si no existen
-@app.on_event("startup")
-def on_startup():
-    crear_tablas()
-
-
-# Modelo de entrada (lo que viene de la web)
 class DatosRRHH(BaseModel):
     nombre: str
     apellido: str
     dni: str
     puesto: str
+    password: str
 
+# --- EVENTOS DE SISTEMA ---
+@app.on_event("startup")
+def on_startup():
+    crear_tablas()
+    # Semilla de Administrador (Para que siempre puedas entrar)
+    with Session(engine) as session:
+        admin_exists = session.exec(select(Empleado).where(Empleado.correo == "admin@empresa.com")).first()
+        if not admin_exists:
+            admin_root = Empleado(
+                nombre="Daniel",
+                apellido="Admin",
+                dni="00000000",
+                puesto="Jefe de RRHH",
+                correo="admin@empresa.com",
+                password="admin123",
+                role="ADMIN",
+                status="ACTIVO",
+                contrato_pdf="n/a"
+            )
+            session.add(admin_root)
+            session.commit()
+            print("✅ Usuario Administrador inicial creado")
+
+# --- ENDPOINTS DE ACCESO (LOGIN) ---
+@app.post("/login")
+async def login(data: LoginData, db: Session = Depends(obtener_sesion)):
+    statement = select(Empleado).where(Empleado.correo == data.usuario)
+    user = db.exec(statement).first()
+
+    if not user:
+        raise HTTPException(status_code=401, detail="Correo electrónico no encontrado")
+
+    if user.password != data.password:
+        raise HTTPException(status_code=401, detail="Contraseña incorrecta")
+
+    # Redirección dinámica basada en rol
+    pagina = "index.html" if user.role == "ADMIN" else "portal_trabajador.html"
+
+    return {
+        "rol": user.role,
+        "dni": user.dni,
+        "nombre": user.nombre,
+        "apellido": user.apellido, # Agregado para el display del portal
+        "redirect": pagina
+    }
+
+# --- ENDPOINTS ADMINISTRATIVOS (RRHH) ---
 @app.post("/iniciar-onboarding")
 def iniciar_onboarding(datos: DatosRRHH, db: Session = Depends(obtener_sesion)):
-    
-    # PRIMERA DEFENSA: Buscar si el DNI ya existe
-    statement = select(Empleado).where(Empleado.dni == datos.dni)
-    empleado_existente = db.exec(statement).first()
+    # 1. Validar si ya existe
+    if db.exec(select(Empleado).where(Empleado.dni == datos.dni)).first():
+        raise HTTPException(status_code=400, detail="El DNI ya existe.")
 
-    if empleado_existente:
-        # Si existe, lanzamos un error 400 (Bad Request)
-        raise HTTPException(status_code=400, detail="El DNI ya se encuentra registrado en el sistema.")
-
-    # SEGUNDA DEFENSA: Validar longitud del DNI (Mínimo 8)
-    if len(datos.dni) < 8:
-        raise HTTPException(status_code=422, detail="El DNI debe tener al menos 8 dígitos.")
+    # 2. Generar Correo
+    correo_gen = f"{datos.nombre.lower()}.{datos.apellido.lower()}@empresa.com"
     
-    correo_generado = f"{datos.nombre.lower()}.{datos.apellido.lower()}@empresa.com"
-    nombre_contrato = f"Contrato_Firmar_{datos.dni}.pdf"
-    
-    accesos = ["Slack", "Portal del Empleado"]
-    if "venta" in datos.puesto.lower():
-        accesos.append("CRM de Ventas")
-
-    # 2. CREAR EL OBJETO PARA LA BASE DE DATOS
-    nuevo_empleado = Empleado(
+    # 3. Guardar en BDD
+    nuevo = Empleado(
         nombre=datos.nombre,
         apellido=datos.apellido,
         dni=datos.dni,
         puesto=datos.puesto,
-        correo=correo_generado,
-        contrato_pdf=nombre_contrato
+        correo=correo_gen,
+        password=datos.password,
+        role="TRABAJADOR",
+        status="PENDIENTE",
+        contrato_pdf=f"Contrato_{datos.dni}.pdf"
     )
-
-    # 3. GUARDAR EN POSTGRESQL
-    db.add(nuevo_empleado)
-    db.commit() # Guardado permanente
-    db.refresh(nuevo_empleado) # Obtenemos el ID generado
+    db.add(nuevo)
+    db.commit()
+    db.refresh(nuevo)
 
     return {
         "estado": "Completado",
-        "mensaje": f"Empleado {nuevo_empleado.id} guardado con éxito.",
         "resultados": {
-            "correo": correo_generado,
-            "documento": nombre_contrato,
-            "herramientas": accesos
+            "correo": correo_gen,
+            "password_temporal": datos.password
         }
     }
 
-@app.get("/empleados")
-def listar_empleados(db: Session = Depends(obtener_sesion)):
-    # Traemos todos los registros de PostgreSQL
+@app.get("/admin/empleados")
+def listar_todos(db: Session = Depends(obtener_sesion)):
     return db.exec(select(Empleado)).all()
 
-@app.post("/login")
-def login(username: str, dni: str = None):
-    # Lógica simple por ahora:
-    if username == "admin":
-        return {"role": "RRHH", "redirect": "dashboard.html"}
-    
-    # Si no es admin, buscamos al trabajador por DNI
-    # (Esto sirve para que el trabajador entre a ver su contrato)
-    return {"role": "TRABAJADOR", "dni": dni, "redirect": "portal_trabajador.html"}
-
-
-
+# --- ENDPOINTS DEL TRABAJADOR ---
+@app.get("/trabajador/mi-contrato/{dni}")
+def obtener_mi_contrato(dni: str, db: Session = Depends(obtener_sesion)):
+    empleado = db.exec(select(Empleado).where(Empleado.dni == dni)).first()
+    if not empleado:
+        raise HTTPException(status_code=404, detail="Contrato no encontrado")
+    return empleado

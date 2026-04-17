@@ -1,10 +1,16 @@
-<script src="https://cdn.tailwindcss.com"></script>
-<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <title>MyOnBoard | Panel RRHH</title>
+</head>
 <body class="bg-gray-50 font-sans flex h-screen">
-    <aside class="w-64 bg-white border-r border-gray-200 flex-shrink-0">
-        <div class="p-6 text-2xl font-bold text-blue-600">MyOnBoard<span class="text-gray-800"></span></div>
-        <nav class="mt-6">
+
+    <aside class="w-64 bg-white border-r border-gray-200 flex-shrink-0 flex flex-col h-screen">
+        <div class="p-6 text-2xl font-bold text-blue-600">MyOnBoard<span class="text-gray-800">.</span></div>
+        <nav class="mt-6 flex-1">
             <a href="#" class="flex items-center px-6 py-3 bg-blue-50 text-blue-600 border-r-4 border-blue-600">
                 <i class="fas fa-home mr-3"></i> Home
             </a>
@@ -12,12 +18,17 @@
                 <i class="fas fa-file-contract mr-3"></i> Contratos
             </a>
         </nav>
+        <div class="p-6 border-t border-gray-100">
+            <button onclick="logout()" class="flex items-center text-gray-500 hover:text-red-600 transition-colors w-full font-medium">
+                <i class="fas fa-sign-out-alt mr-3"></i> Cerrar Sesión
+            </button>
+        </div>
     </aside>
 
     <main class="flex-1 overflow-y-auto p-8">
         <header class="flex justify-between items-center mb-8">
-            <h1 class="text-2xl font-bold text-gray-800">Buenos días, Daniel</h1>
-            <button onclick="abrirModal()" class="bg-blue-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-700">
+            <h1 class="text-2xl font-bold text-gray-800" id="saludo-admin">Buenos días, Daniel</h1>
+            <button onclick="abrirModal()" class="bg-blue-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-700 shadow-sm transition">
                + Crear Contrato
             </button>
         </header>
@@ -27,20 +38,20 @@
                 <p class="text-gray-500 text-sm">Contratos Activos</p>
                 <h3 class="text-2xl font-bold text-gray-800" id="count-activos">0</h3>
             </div>
-            </div>
+        </div>
 
         <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
             <div class="p-6 border-b border-gray-100 flex justify-between items-center">
                 <h3 class="font-bold text-gray-800">Contratos Recientes</h3>
-                <button onclick="cargarEmpleados()" class="text-blue-600 text-sm font-medium">Ver todos</button>
+                <button onclick="cargarEmpleados()" class="text-blue-600 text-sm font-medium hover:underline">Actualizar</button>
             </div>
             <table class="w-full text-left">
-                <thead class="bg-gray-50 text-gray-400 text-xs uppercase">
+                <thead class="bg-gray-50 text-gray-400 text-[10px] uppercase tracking-wider">
                     <tr>
                         <th class="px-6 py-3">Empleado</th>
                         <th class="px-6 py-3">Puesto</th>
                         <th class="px-6 py-3">Estado</th>
-                        <th class="px-6 py-3">Acción</th>
+                        <th class="px-6 py-3 text-right">Acción</th>
                     </tr>
                 </thead>
                 <tbody id="lista-empleados" class="divide-y divide-gray-100 text-sm">
@@ -49,127 +60,153 @@
         </div>
     </main>
 
-<div id="modal-crear" class="fixed inset-0 bg-gray-900 bg-opacity-50 hidden items-center justify-center z-50">
-    <div class="bg-white rounded-xl shadow-xl w-full max-w-md p-8">
-        <div class="flex justify-between items-center mb-6">
-            <h2 class="text-xl font-bold text-gray-800">Crear nuevo contrato</h2>
-            <button onclick="cerrarModal()" class="text-gray-400 hover:text-gray-600"><i class="fas fa-times"></i></button>
+    <div id="modal-crear" class="fixed inset-0 bg-gray-900 bg-opacity-50 hidden items-center justify-center z-50">
+        <div class="bg-white rounded-xl shadow-xl w-full max-w-md p-8 animate-in fade-in zoom-in duration-200">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-xl font-bold text-gray-800">Crear nuevo contrato</h2>
+                <button onclick="cerrarModal()" class="text-gray-400 hover:text-gray-600"><i class="fas fa-times"></i></button>
+            </div>
+            
+            <form id="form-onboarding" class="space-y-4">
+                <input type="text" id="nombre" placeholder="Nombre" class="w-full border p-2 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" required>
+                <input type="text" id="apellido" placeholder="Apellido" class="w-full border p-2 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" required>
+                <input type="text" id="dni" placeholder="DNI" class="w-full border p-2 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" required maxlength="8">
+        
+                <div class="relative">
+                    <input type="password" id="password" placeholder="Definir Contraseña Inicial" class="w-full border p-2 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" required>
+                    <p class="text-[10px] text-gray-400 mt-1">El trabajador usará su correo y esta clave.</p>
+                </div>
+
+                <select id="puesto" class="w-full border p-2 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" required>
+                    <option value="Ingeniero">Ingeniero</option>
+                    <option value="Asesor de Ventas">Asesor de Ventas</option>
+                    <option value="Soporte Técnico">Soporte Técnico</option>
+                </select>
+                <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded-lg font-bold hover:bg-blue-700 transition">Generar Onboarding</button>
+            </form>
         </div>
-        <form id="form-onboarding" class="space-y-4">
-            <input type="text" id="nombre" placeholder="Nombre" class="w-full border p-2 rounded-lg" required>
-            <input type="text" id="apellido" placeholder="Apellido" class="w-full border p-2 rounded-lg" required>
-            <input type="text" id="dni" placeholder="DNI" class="w-full border p-2 rounded-lg" required maxlength="8">
-            <select id="puesto" class="w-full border p-2 rounded-lg" required>
-                <option value="Ingeniero">Ingeniero</option>
-                <option value="Asesor de Ventas">Asesor de Ventas</option>
-                <option value="Soporte Técnico">Soporte Técnico</option>
-            </select>
-            <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded-lg font-bold">Generar Onboarding</button>
-        </form>
     </div>
-</div>
+
+    <div id="modal-exito" class="fixed inset-0 bg-gray-900 bg-opacity-60 hidden items-center justify-center z-[60]">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-8 text-center animate-in zoom-in duration-300">
+        <div class="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl">
+            <i class="fas fa-check-circle"></i>
+        </div>
+        <h2 class="text-xl font-bold text-gray-800 mb-2">¡Usuario Creado!</h2>
+        <p class="text-sm text-gray-500 mb-6">El colaborador ya puede iniciar sesión con estas credenciales:</p>
+        
+        <div class="bg-gray-50 rounded-lg p-4 mb-6 text-left space-y-2 border border-gray-100">
+            <p class="text-xs text-gray-400 uppercase font-bold tracking-wider">Correo / Usuario</p>
+            <p class="text-sm font-mono text-blue-600 font-bold" id="exito-correo">---</p>
+            <div class="h-px bg-gray-200 my-2"></div>
+            <p class="text-xs text-gray-400 uppercase font-bold tracking-wider">Contraseña Inicial</p>
+            <p class="text-sm font-mono text-gray-800 font-bold" id="exito-pass">---</p>
+        </div>
+
+        <button onclick="cerrarModalExito()" class="w-full bg-gray-800 text-white py-3 rounded-xl font-bold hover:bg-black transition shadow-lg">
+            Entendido
+        </button>
+    </div>
+    </div>
 
 <script>
+    // 1. PROTECCIÓN DE RUTA
+    const rol = localStorage.getItem('user_rol');
+    if (!rol || rol !== 'ADMIN') {
+        window.location.href = 'login.html';
+    }
+
+    const nombreAdmin = localStorage.getItem('user_nombre') || 'Daniel';
+    document.getElementById('saludo-admin').innerText = `Buenos días, ${nombreAdmin}`;
+
+    // 2. CARGAR EMPLEADOS
     async function cargarEmpleados() {
         try {
-            const respuesta = await fetch('http://127.0.0.1:8000/empleados');
-            const empleados = await respuesta.json();
-            
+            const respuesta = await fetch('http://127.0.0.1:8000/admin/empleados');
+            const todos = await respuesta.json();
             const tabla = document.getElementById('lista-empleados');
-            const contador = document.getElementById('count-activos');
+            const soloTrabajadores = todos.filter(emp => emp.role !== 'ADMIN');
             
-            // Limpiamos la tabla antes de llenar
+            document.getElementById('count-activos').innerText = soloTrabajadores.length;
             tabla.innerHTML = '';
-            contador.innerText = empleados.length;
 
-            empleados.forEach(emp => {
-                // GESTIÓN DE ESTADO: Si el campo no existe en la BDD, mostramos 'PENDIENTE'
-                const estadoActual = emp.status || 'PENDIENTE';
-                
-                // Definimos el color según el estado
-                const colorClase = estadoActual === 'ACTIVE' || estadoActual === 'ACTIVO' 
-                    ? 'bg-green-100 text-green-700' 
-                    : 'bg-yellow-100 text-yellow-700';
-
-                const fila = `
-                    <tr class="hover:bg-gray-50 transition-colors border-b border-gray-100">
-                        <td class="px-6 py-4 font-medium text-gray-900">${emp.nombre} ${emp.apellido}</td>
-                        <td class="px-6 py-4 text-gray-600">${emp.puesto}</td>
+            soloTrabajadores.forEach(emp => {
+                const estado = emp.status || 'PENDIENTE';
+                const color = (estado === 'ACTIVO' || estado === 'FIRMADO') ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700';
+                tabla.innerHTML += `
+                    <tr class="hover:bg-gray-50 border-b border-gray-100">
                         <td class="px-6 py-4">
-                            <span class="px-3 py-1 text-[10px] font-bold rounded-full uppercase tracking-wider ${colorClase}">
-                                ${estadoActual}
-                            </span>
+                            <div class="flex flex-col">
+                                <span class="font-bold text-gray-900">${emp.nombre} ${emp.apellido}</span>
+                                <span class="text-[10px] text-gray-400">${emp.correo}</span>
+                            </div>
                         </td>
-                        <td class="px-6 py-4 text-blue-600 font-medium cursor-pointer hover:underline text-sm">
-                            Ver contrato
+                        <td class="px-6 py-4 text-gray-600 text-xs">${emp.puesto}</td>
+                        <td class="px-6 py-4">
+                            <span class="px-3 py-1 text-[9px] font-bold rounded-full uppercase ${color}">${estado}</span>
                         </td>
-                    </tr>
-                `;
-                tabla.innerHTML += fila;
+                        <td class="px-6 py-4 text-right">
+                            <button class="text-blue-600 font-medium hover:underline text-xs">Ver contrato</button>
+                        </td>
+                    </tr>`;
             });
-        } catch (error) {
-            console.error("Error al cargar empleados:", error);
-            const tabla = document.getElementById('lista-empleados');
-            tabla.innerHTML = `<tr><td colspan="4" class="px-6 py-4 text-center text-red-500">Error al conectar con el servidor</td></tr>`;
-        }
+        } catch (e) { console.error("Error cargando tabla:", e); }
     }
 
-    // Ejecutar la carga apenas abra la página
+    // 3. EVENTOS MODAL
+    function abrirModal() { document.getElementById('modal-crear').classList.replace('hidden', 'flex'); }
+    function cerrarModal() { document.getElementById('modal-crear').classList.replace('flex', 'hidden'); }
+    function cerrarModalExito() { document.getElementById('modal-exito').classList.replace('flex', 'hidden'); }
+
+    // 4. ENVÍO DE FORMULARIO (CORRECCIÓN DEFINITIVA)
+    document.getElementById('form-onboarding').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        // Datos capturados
+        const nombre = document.getElementById('nombre').value;
+        const apellido = document.getElementById('apellido').value;
+
+        const payload = {
+            nombre: nombre,
+            apellido: apellido,
+            dni: document.getElementById('dni').value,
+            puesto: document.getElementById('puesto').value,
+            password: document.getElementById('password').value
+        };
+
+        try {
+            const res = await fetch('http://127.0.0.1:8000/iniciar-onboarding', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(payload)
+            });
+
+            const data = await res.json();
+
+            if (res.ok) {
+                // REDUNDANCIA: Si el servidor falla en enviar el correo, lo calculamos aquí
+                const correoLocal = `${nombre.toLowerCase()}.${apellido.toLowerCase()}@empresa.com`;
+                
+                // Llenamos el modal de éxito usando el dato del servidor o el local
+                document.getElementById('exito-correo').innerText = data.resultados?.correo || correoLocal;
+                document.getElementById('exito-pass').innerText = data.resultados?.password_temporal || payload.password;
+
+                // Cambiamos de modal
+                cerrarModal();
+                document.getElementById('form-onboarding').reset();
+                document.getElementById('modal-exito').classList.replace('hidden', 'flex');
+                
+                cargarEmpleados();
+            } else {
+                alert("Error: " + (data.detail || "No se pudo crear"));
+            }
+        } catch (err) {
+            alert("⚠️ Error de conexión con el servidor");
+        }
+    });
+
+    function logout() { localStorage.clear(); window.location.href = 'login.html'; }
     window.onload = cargarEmpleados;
-
-// Función para mostrar el modal
-function abrirModal() {
-    const modal = document.getElementById('modal-crear');
-    modal.classList.remove('hidden');
-    modal.classList.add('flex');
-}
-
-// Función para ocultar el modal
-function cerrarModal() {
-    const modal = document.getElementById('modal-crear');
-    modal.classList.add('hidden');
-    modal.classList.remove('flex');
-}
-
-// Vincula el botón azul de "+ Crear Contrato" con abrirModal()
-// Cambia tu botón azul arriba por: <button onclick="abrirModal()" ...>
-
-// Escuchar el envío del formulario
-document.getElementById('form-onboarding').addEventListener('submit', async (e) => {
-    e.preventDefault(); // CRITICO: evita que la página se recargue
-    console.log("🚀 Enviando datos..."); 
-
-    const datos = {
-        nombre: document.getElementById('nombre').value,
-        apellido: document.getElementById('apellido').value,
-        dni: document.getElementById('dni').value,
-        puesto: document.getElementById('puesto').value
-    };
-
-    try {
-        const res = await fetch('http://127.0.0.1:8000/iniciar-onboarding', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify(datos)
-        });
-
-        console.log("📡 Respuesta del servidor:", res.status);
-
-        if(res.ok) {
-            alert("✅ Contrato creado con éxito");
-            cerrarModal();
-            document.getElementById('form-onboarding').reset(); 
-            cargarEmpleados(); // Esto actualiza tu tabla de Deel
-        } else {
-            const error = await res.json();
-            alert("❌ Error: " + (error.detail || "No se pudo crear"));
-        }
-    } catch (err) {
-        console.error("🔥 Error de conexión:", err);
-        alert("⚠️ No se pudo conectar con el servidor (Uvicorn)");
-    }
-});
-
 </script>
-
 </body>
+</html>
