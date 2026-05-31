@@ -4,8 +4,17 @@ from sqlmodel import Session, select
 from .database import engine, crear_tablas, obtener_sesion
 from .models import Empleado, Documento
 from pydantic import BaseModel
+from fastapi.responses import RedirectResponse
+from fastapi.staticfiles import StaticFiles
 
 app = FastAPI(title="MyOnBoard API - Sistema de Onboarding")
+
+@app.get("/")
+async def root_to_login():
+    return RedirectResponse(url="/frontend/login.html")
+
+app.mount("/frontend", StaticFiles(directory="frontend"), name="frontend")
+
 
 # --- CONFIGURACIÓN CORS ---
 app.add_middleware(
@@ -107,6 +116,7 @@ def iniciar_onboarding(datos: DatosRRHH, db: Session = Depends(obtener_sesion)):
             "password_temporal": datos.password
         }
     }
+
 
 @app.get("/admin/empleados")
 def listar_todos(db: Session = Depends(obtener_sesion)):
